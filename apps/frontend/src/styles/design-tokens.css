@@ -1,0 +1,73 @@
+/* Design system tokens — typography and colors */
+:root {
+  font-family: Mulish, system-ui, sans-serif;
+  /* Fallback for unknown text so nothing is invisible */
+  color: var(--text-primary);
+
+  /* Typography (size / line-height; weight in Tailwind or component) */
+  --font-display: 64px;
+  --font-display-lh: 72px;
+  --font-h1: 48px;
+  --font-h1-lh: 56px;
+  --font-h2: 36px;
+  --font-h2-lh: 44px;
+  --font-h3: 24px;
+  --font-h3-lh: 32px;
+  --font-body-large: 18px;
+  --font-body-large-lh: 28px;
+  --font-body: 16px;
+  --font-body-lh: 24px;
+  --font-body-small: 14px;
+  --font-body-small-lh: 20px;
+  --font-button: 16px;
+  --font-button-lh: 24px;
+  --font-caption: 12px;
+  --font-caption-lh: 16px;
+
+  /* Color tokens */
+  --background-0: #000;
+  --background-05: #1c1d1f;
+  --background-1: #27292d;
+  --background-2: #383b40;
+  --background-3: #5e626b;
+  --text-primary: hsla(0, 0%, 100%, 0.9);
+  --text-accent: hsla(0, 0%, 100%, 0.65);
+  --text-disabled: hsla(0, 0%, 100%, 0.38);
+  --text-primary-on-accent: rgba(0, 0, 0, 0.9);
+  --warning: #ffd54f;
+  --error: #cf6679;
+  --error-elevated: #ff8a8a;
+  --brand: #cddc39;
+  --disabled: hsla(0, 0%, 100%, 0.12);
+  --badge: #ef5350;
+  --scrollbar: hsla(0, 0%, 100%, 0.25);
+  --scrollbar-background: rgba(0, 0, 0, 0.3);
+  --scrollbar-on-background-0: hsla(0, 0%, 100%, 0.25);
+  --scrollbar-background-on-background-0: rgba(0, 0, 0, 0.3);
+  --tooltip: #a9a9a9;
+  --divider: #5e626b;
+}
+
+/* Scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar) var(--scrollbar-background);
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-background);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar);
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-on-background-0);
+}
