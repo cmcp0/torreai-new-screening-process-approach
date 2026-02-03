@@ -175,7 +175,7 @@ Code that is used across **multiple bounded contexts** should be placed in `src/
 ## Application / framework boundary
 
 - **`src/`** holds only business logic (screening bounded context, shared domain, config, wiring). No HTTP or FastAPI.
-- **`apps/backend/`** holds the FastAPI app: routes, request/response schemas (Pydantic), and `main.py`. It depends on `src` for services and wiring. Run with `uvicorn apps.backend.main:app` or `python -m src`.
+- **`apps/backend/`** holds the FastAPI app: routes, request/response schemas (Pydantic), and `main.py`. It depends on `src` for services and wiring. Run with `uvicorn apps.backend.main:app` or `python -m apps.backend`.
 
 ## Directory Structure
 
