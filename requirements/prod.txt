@@ -1,0 +1,3 @@
+-r common.txt
+# Optional: asyncpg for Postgres
+# asyncpg>=0.30.0

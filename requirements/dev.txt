@@ -1,0 +1,4 @@
+-r common.txt
+-r test.txt
+pytest-asyncio>=0.24.0
+pytest-cov>=4.1.0
