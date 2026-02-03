@@ -74,12 +74,13 @@ Candidates need a low-friction way to complete initial screening for a job witho
 - WebSocket connection and audio streaming between frontend and backend during the call.
 - Consent and call flow wired to backend (start call only after consent).
 - After call end, redirect to analysis page; frontend polls or fetches until analysis is ready; display fit score and skills.
+- Docker Compose (or equivalent) to run the full stack locally (frontend, backend, Postgres, RabbitMQ, Ollama) for E2E and development.
 
-**Deliverables**: Integrated E2E flow; error handling and loading states; documentation of API/WebSocket contracts.
+**Deliverables**: Integrated E2E flow; error handling and loading states; documentation of API/WebSocket contracts; Docker Compose (or equivalent) for local run of full stack.
 
 **Dependencies**: Phase 1 and Phase 2 completed.
 
-**Success Criteria**: A candidate can complete application → consent → call → see analysis page with fit score and skills; errors (e.g. invalid username/job_offer_id) show appropriate messages.
+**Success Criteria**: A candidate can complete application → consent → call → see analysis page with fit score and skills; errors (e.g. invalid username/job_offer_id) show appropriate messages; full stack can be started with a single command (e.g. `docker compose up`).
 
 ---
 
