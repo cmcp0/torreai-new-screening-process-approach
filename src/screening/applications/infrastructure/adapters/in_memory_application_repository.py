@@ -45,6 +45,16 @@ class InMemoryApplicationRepository(ApplicationRepository):
                 self._username_job_index[key] = application.id
         return application.id
 
+    async def save_application_graph(
+        self,
+        candidate: Candidate,
+        job_offer: JobOffer,
+        application: ScreeningApplication,
+    ) -> ApplicationId:
+        await self.save_candidate(candidate)
+        await self.save_job_offer(job_offer)
+        return await self.save_application(application)
+
     async def get_application(self, application_id: ApplicationId) -> Optional[ScreeningApplication]:
         return self._applications.get(str(application_id))
 

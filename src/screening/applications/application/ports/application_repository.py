@@ -31,6 +31,15 @@ class ApplicationRepository(ABC):
         pass
 
     @abstractmethod
+    async def save_application_graph(
+        self,
+        candidate: Candidate,
+        job_offer: JobOffer,
+        application: ScreeningApplication,
+    ) -> ApplicationId:
+        pass
+
+    @abstractmethod
     async def get_application(self, application_id: ApplicationId) -> Optional[ScreeningApplication]:
         pass
 

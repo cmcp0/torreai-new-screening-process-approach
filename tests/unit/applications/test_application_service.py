@@ -3,6 +3,7 @@ Unit tests for ApplicationService (Phase 2 Testing Strategy).
 Torre adapters and event publisher are mocked.
 """
 import pytest
+import asyncio
 from unittest.mock import AsyncMock, MagicMock
 
 from src.screening.applications.application.services import ApplicationService
@@ -14,6 +15,9 @@ from src.screening.applications.domain.value_objects import (
     JobOfferFromTorre,
 )
 from src.screening.applications.domain.events import JobOfferApplied
+from src.screening.applications.infrastructure.adapters.in_memory_application_repository import (
+    InMemoryApplicationRepository,
+)
 from src.screening.shared.domain import ApplicationId, CandidateId, JobOfferId
 
 
@@ -52,6 +56,9 @@ def mock_repository():
     repo.save_candidate = AsyncMock(return_value=CandidateId("00000000-0000-0000-0000-000000000001"))
     repo.save_job_offer = AsyncMock(return_value=JobOfferId("00000000-0000-0000-0000-000000000002"))
     repo.save_application = AsyncMock(return_value=ApplicationId("00000000-0000-0000-0000-000000000003"))
+    repo.save_application_graph = AsyncMock(
+        return_value=ApplicationId("00000000-0000-0000-0000-000000000003")
+    )
     return repo
 
 
@@ -81,9 +88,7 @@ async def test_create_application_returns_201_and_publishes_event(
     assert result.created is True
     mock_bios.get_bio.assert_awaited_once_with("johndoe")
     mock_opportunities.get_opportunity.assert_awaited_once_with("job123")
-    mock_repository.save_candidate.assert_awaited_once()
-    mock_repository.save_job_offer.assert_awaited_once()
-    mock_repository.save_application.assert_awaited_once()
+    mock_repository.save_application_graph.assert_awaited_once()
     mock_event_publisher.publish.assert_called_once()
     event = mock_event_publisher.publish.call_args[0][0]
     assert isinstance(event, JobOfferApplied)
@@ -140,3 +145,45 @@ async def test_create_application_idempotent_when_duplicate(
     assert result.application_id == existing_id
     assert result.created is False
     mock_event_publisher.publish.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_create_application_best_effort_idempotent_within_process():
+    class SlowBios:
+        async def get_bio(self, username: str):
+            await asyncio.sleep(0.01)
+            return CandidateFromTorre(
+                username=username,
+                full_name="John Doe",
+                skills=["Python"],
+                jobs=[],
+            )
+
+    class SlowOpportunities:
+        async def get_opportunity(self, job_offer_id: str):
+            await asyncio.sleep(0.01)
+            return JobOfferFromTorre(
+                external_id=job_offer_id,
+                objective="Build APIs",
+                strengths=["Python"],
+                responsibilities=["Code review"],
+            )
+
+    repo = InMemoryApplicationRepository()
+    event_publisher = MagicMock()
+    event_publisher.publish = MagicMock()
+    service = ApplicationService(
+        bios=SlowBios(),
+        opportunities=SlowOpportunities(),
+        repository=repo,
+        event_publisher=event_publisher,
+    )
+
+    first, second = await asyncio.gather(
+        service.create_application("johndoe", "job123"),
+        service.create_application("johndoe", "job123"),
+    )
+
+    assert str(first.application_id) == str(second.application_id)
+    assert {first.created, second.created} == {True, False}
+    event_publisher.publish.assert_called_once()
