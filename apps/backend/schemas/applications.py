@@ -1,9 +1,11 @@
-from pydantic import BaseModel, Field
+from typing import Optional
+
+from pydantic import BaseModel, Field, StrictStr
 
 
 class CreateApplicationRequest(BaseModel):
-    username: str = Field(..., min_length=1)
-    job_offer_id: str = Field(..., min_length=1)
+    username: Optional[StrictStr] = Field(default=None)
+    job_offer_id: Optional[StrictStr] = Field(default=None)
 
 
 class CreateApplicationResponse(BaseModel):

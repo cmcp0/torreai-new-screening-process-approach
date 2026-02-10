@@ -37,7 +37,9 @@ async def get_analysis(
     if result.analysis is None:
         raise HTTPException(status_code=202, detail="Analysis pending")
 
+    failed = result.analysis.status == "failed"
     return AnalysisResponse(
         fit_score=result.analysis.fit_score,
         skills=result.analysis.skills,
+        failed=failed,
     )

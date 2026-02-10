@@ -92,9 +92,17 @@ def test_post_applications_duplicate_returns_201_idempotent(client):
 
 def test_post_applications_missing_username_returns_400(client):
     response = client.post("/api/applications", json={"job_offer_id": "job123"})
-    assert response.status_code == 422
+    assert response.status_code == 400
+    assert response.json()["detail"] == "username and job_offer_id are required"
 
 
-def test_post_applications_empty_body_returns_422(client):
+def test_post_applications_empty_body_returns_400(client):
     response = client.post("/api/applications", json={})
-    assert response.status_code == 422
+    assert response.status_code == 400
+    assert response.json()["detail"] == "username and job_offer_id are required"
+
+
+def test_post_applications_missing_body_returns_400(client):
+    response = client.post("/api/applications")
+    assert response.status_code == 400
+    assert response.json()["detail"] == "username and job_offer_id are required"
