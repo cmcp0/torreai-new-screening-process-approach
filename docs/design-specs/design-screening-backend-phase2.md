@@ -135,7 +135,7 @@ This design doc specifies the backend for the Screening Simulation POC: applicat
 - Call prompt not ready: Timeout after N seconds and use default short prompt (e.g. one generic question) so the call can proceed.
 - Candidate disconnects mid-call: Close WebSocket, publish `CallFinished` so analysis can run with partial data; analysis handles incomplete transcript.
 - Emma LLM/voice slow: Design for streaming and timeouts; consider short TTS chunks. POC may use Ollama; document latency expectations.
-- Multiple tabs connecting for same application_id: Per API contract: only one active call per application_id; a new connection for the same application_id is rejected (e.g. close with code 409 or 4xx) so the existing call is not disrupted.
+- Multiple tabs connecting for same application_id: Per API contract: only one active call per application_id; a new connection for the same application_id is rejected with close code **4409** so the existing call is not disrupted.
 
 ---
 
@@ -438,7 +438,7 @@ All HTTP and WebSocket APIs use the **base path** `/api`. Chosen routes:
 ### Decision 5: One active call per application_id
 
 - **Context**: Multiple tabs or retries could open more than one WebSocket for the same application_id; policy must be testable.
-- **Chosen**: Only one active call per application_id. A new WebSocket connection for an application_id that already has an active call is rejected: server closes the new connection with a non-success code (e.g. 409 Conflict or 4xx) and does not replace the existing call.
+- **Chosen**: Only one active call per application_id. A new WebSocket connection for an application_id that already has an active call is rejected: server closes the new connection with code **4409** and does not replace the existing call.
 - **Rationale**: Prevents overlapping Emma sessions and ensures a single transcript per application for analysis.
 
 ---

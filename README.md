@@ -1,192 +1,166 @@
 # Torre.ai AI-Powered Screening Process
 
-A Proof of Concept (POC) for an AI-powered screening process simulation that enables candidates to complete initial screening interviews with Emma, Torre.ai's AI agent, through video/audio calls. Built following Hexagonal Architecture (Ports and Adapters) and Domain-Driven Design (DDD) principles.
+Proof of Concept (POC) for an AI-powered screening workflow where candidates apply with Torre identifiers, complete a screening call with Emma, and receive a post-call fit analysis.
 
-## 🏗️ Project Structure
+## Project Structure
 
-The project is organized into the following key directories:
+- `apps/backend`: FastAPI entrypoint, HTTP routes, WebSocket route, API schemas
+- `apps/frontend`: Vue 3 + Vite frontend (application, call, analysis pages)
+- `src/screening`: Screening bounded context (applications, calls, analysis)
+- `src/shared`: Shared domain primitives (events)
+- `tests`: Unit and integration tests
+- `docs`: PRD, API/WebSocket contract, architecture and scoring docs
 
-### 📂 `app`
+## Architecture
 
-Contains the core of your framework.
+The backend follows Hexagonal Architecture (Ports and Adapters) with DDD layering:
 
-### 📂 `src`
+1. `domain`: entities, value objects, domain events
+2. `application`: use-case orchestration and ports
+3. `infrastructure`: adapters (Torre API, repositories, broker, Ollama)
 
-Contains the core of your application and the domain logic.
+## Core Flow
 
-#### 📂 `bounded_contexts`
+1. `POST /api/applications` receives `username` + `job_offer_id`
+2. Backend fetches Torre bios/opportunity data and persists candidate/job/application
+3. `JobOfferApplied` triggers prompt and embedding preparation
+4. Candidate connects to `WS /api/ws/call?application_id=<uuid>`
+5. On call completion, `CallFinished` triggers analysis generation
+6. Frontend polls `GET /api/applications/{application_id}/analysis`
 
-Contains the bounded contexts of your application.
+## Prerequisites
 
-#### 📂 `modules`
+- Python 3.12+
+- Node.js 20+
+- Docker + Docker Compose (optional, for full stack)
 
-Contains the modules of your application.
+## Local Setup (without Docker)
 
+### Backend
 
-### 📂 `tests`
-
-Contains the tests of your application.
-
-## 🎯 Purpose
-
-This POC demonstrates an AI-powered screening system that:
-
-- **For Candidates**: Provides flexible scheduling, consistent experience, and immediate engagement after application
-- **For Recruiters/Job Posters**: Reduces manual screening time, standardizes evaluations, and provides data-driven insights
-- **For Emma AI**: Enables scalable screening capacity with 24/7 availability
-
-### Key Features
-
-- Collects candidate applications via Torre.ai username and job offer URL
-- Leverages Torre.ai APIs to gather candidate genome data and job requirements
-- Conducts AI-powered screening calls with Emma asking tailored questions
-- Analyzes call data to generate summaries and screening scores for job posters
-- Follows event-driven architecture with `JobOfferApplied` and `UserLeftCall` events
-
-### Architecture Benefits
-
-- Clear separation of concerns (Domain, Application, Infrastructure layers)
-- Domain-centric design with bounded contexts
-- Framework independence (business logic decoupled from infrastructure)
-- Highly testable code (each layer can be tested independently)
-- Maintainable and scalable structure
-
-## 🏛️ Architectural Overview
-
-The project follows these key principles:
-
-1. **Domain Layer** (`domain/`)
-   - Contains the business logic
-   - Pure Python with no external dependencies
-   - Defines interfaces (ports) for external operations
-
-2. **Application Layer** (`application/`)
-   - Orchestrates the flow of data and implements use cases
-   - Coordinates between the domain and infrastructure layers
-
-3. **Infrastructure Layer** (`infrastructure/`)
-   - Implements adapters for external services
-   - Contains framework-specific code
-   - Implements the interfaces defined in the domain layer
-
-## 🚀 Getting Started
-
-1. Clone this repository:
 ```bash
-git clone <repository-url>
-cd torreai-new-screening-process-approach
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements/dev.txt
+python -m apps.backend
 ```
 
-2. Install uv (if not already installed):
+Backend: `http://localhost:8000`
+
+### Frontend
+
 ```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-# Or on Windows: powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+cd apps/frontend
+npm ci
+npm run dev
 ```
 
-3. Install dependencies using uv:
-```bash
-uv sync
+Frontend: `http://localhost:5173`
+
+### Try the flow
+
+Open:
+
+```text
+http://localhost:5173/application?username=YOUR_TORRE_USERNAME&job_offer_id=YOUR_JOB_OFFER_ID
 ```
 
-This will:
-- Create a virtual environment automatically
-- Install all project dependencies from `pyproject.toml`
-- Install development dependencies (pytest, pytest-cov)
+## Docker Compose
 
-4. Activate the virtual environment:
+From repo root:
+
 ```bash
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-# Or use uv run <command> to run commands in the virtual environment automatically
+make up-d
 ```
 
-**Note**: This project uses `uv` for fast Python package management. See `pyproject.toml` for dependencies.
+Services:
 
-## 📝 Usage
+- Frontend: `http://localhost:5173`
+- Backend docs: `http://localhost:8000/docs`
 
-### Development Workflow
+Optional Ollama profile:
 
-1. **Create bounded contexts** under `src/bounded_context/`
-2. **Define domain model** in the `domain/` layer (entities, value objects, ports)
-3. **Implement use cases** in the `application/` layer (services, commands, queries)
-4. **Add adapters** in the `infrastructure/` layer (API clients, repositories, external services)
-5. **Write tests** following the same structure in `tests/`
-
-### Key Components
-
-- **Event-Driven Architecture**: System uses events (`JobOfferApplied`, `UserLeftCall`) to orchestrate workflows
-- **Torre.ai Integration**: Fetches candidate profiles and job details via Torre.ai APIs
-- **Emma AI Integration**: Conducts screening interviews with personalized questions
-- **Real-time Transcription**: Captures conversation data during calls
-- **Post-Call Analysis**: Generates summaries and fit assessments using embeddings and AI processing
-
-## 🧪 Testing
-
-Run tests using:
 ```bash
-# Using uv (recommended)
-uv run pytest
+make up-ollama
+```
 
-# Or activate venv and run directly
+Pull the required embedding model (one-time per Ollama data volume):
+
+```bash
+make ollama-pull-embed
+```
+
+Verify model is present:
+
+```bash
+make ollama-list-models
+```
+
+Ollama models are persisted in Docker volume `ollama_data`.
+
+When running in Docker, backend defaults to `SCREENING_OLLAMA_BASE_URL=http://ollama:11434`.
+Override if needed, for example:
+
+```bash
+SCREENING_OLLAMA_BASE_URL=http://host.docker.internal:11434 make up-d
+```
+
+Stop stack:
+
+```bash
+make down
+```
+
+## Configuration
+
+Backend env vars use `SCREENING_` prefix (see `src/config.py`):
+
+- `SCREENING_CORS_ORIGINS`
+- `SCREENING_TORRE_BASE_URL`
+- `SCREENING_TORRE_TIMEOUT`
+- `SCREENING_TORRE_RETRIES`
+- `SCREENING_DATABASE_URL`
+- `SCREENING_BROKER_URL`
+- `SCREENING_OLLAMA_BASE_URL`
+- `SCREENING_OLLAMA_EMBED_MODEL`
+- `SCREENING_OLLAMA_CHAT_MODEL`
+
+Frontend env var:
+
+- `VITE_API_BASE_URL` (default `http://localhost:8000`)
+
+Ollama notes:
+
+- `SCREENING_OLLAMA_EMBED_MODEL` defaults to `nomic-embed-text`
+- the model must exist in the Ollama instance (for Docker profile: run `make ollama-pull-embed`)
+
+## Testing
+
+Backend tests:
+
+```bash
 source .venv/bin/activate
 pytest
 ```
 
-## 📦 Project Dependencies
-
-Current dependencies (Phase 1 Foundation):
-
-- **httpx**: HTTP client for Torre.ai API integration
-- **psycopg**: PostgreSQL adapter
-- **pika**: RabbitMQ event publisher
-- **pytest**: Testing framework (dev dependency)
-
-All dependencies are managed via `uv` and defined in `pyproject.toml`. To add new dependencies:
+Frontend tests:
 
 ```bash
-uv add <package-name>        # Add runtime dependency
-uv add --dev <package-name>  # Add development dependency
+cd apps/frontend
+npm run test
 ```
 
-Future dependencies (to be added in later phases):
+## Documentation
 
-- **Event-Driven Framework**: For handling `JobOfferApplied` and `UserLeftCall` events
-- **AI/LLM Service**: Emma AI integration for screening conversations
-- **Transcription Service**: Real-time transcription of video/audio calls
-- **Video/Audio Infrastructure**: Video/audio call functionality
-- **Embeddings/Analysis Service**: Post-call analysis using embeddings and AI processing
+- `docs/prd-screening-simulation.md`
+- `docs/api-websocket-contract.md`
+- `docs/bounded-context-structure.md`
+- `docs/fit-score-algorithm.md`
+- `docs/torre-api-paths.md`
+- `docs/design-specs/design-screening-frontend-phase1.md`
+- `docs/design-specs/design-screening-backend-phase2.md`
+- `docs/design-specs/design-screening-integration-phase3.md`
 
-See [AGENTS.md](./AGENTS.md) for more details on architecture and dependencies.
+## Status
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📚 Documentation
-
-- **[AGENTS.md](./AGENTS.md)**: Comprehensive project context, agent ecosystem, and architectural patterns
-- **[PRD](./docs/prds/PRD-torre-ai-screening-process.md)**: Product Requirements Document (v1.1)
-- **[Folder Structure Rule](./.cursor/rules/folder-structure.mdc)**: Detailed folder organization guidelines
-
-## 🏗️ Architecture
-
-This project follows **Hexagonal Architecture** (Ports and Adapters) with **Domain-Driven Design**:
-
-- **Domain Layer**: Pure business logic with no external dependencies
-- **Application Layer**: Orchestrates use cases and coordinates between layers
-- **Infrastructure Layer**: Implements adapters for external services
-
-See [AGENTS.md](./AGENTS.md) for detailed architectural documentation.
-
-## 📚 Additional Resources
-
-- [Hexagonal Architecture (Alistair Cockburn)](https://alistair.cockburn.us/hexagonal-architecture/)
-- [Domain-Driven Design (Eric Evans)](https://domainlanguage.com/ddd/)
-- [Torre.ai API Documentation](https://torre.ai)
-
-## ⚠️ Project Status
-
-**This is a Proof of Concept (POC)** - formal SLAs and detailed metrics are not required. The project is in active development, and many technical decisions (framework, dependencies, deployment) are still to be determined during implementation.
+This project is a POC in active development.

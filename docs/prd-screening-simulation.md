@@ -8,7 +8,9 @@
 - **Last Updated**: 2025-02-01
 - **Owner**: TBD
 
-This product is an audio-only screening simulation where a candidate applies to a job offer, completes a screening call with Emma (Torre.ai’s AI agent), and receives a post-call analysis with a fit score. It uses Torre.ai public APIs for candidate and job data, persists applications, and follows an event-driven flow from application → call → analysis. The implementation aligns with the bounded context structure described in [bounded-context-structure.md](bounded-context-structure.md) (applications, calls, analysis modules).
+This product is an audio-only screening simulation where a candidate applies to a job offer, completes a screening call with Emma (Torre.ai’s AI agent), and receives a post-call analysis with a fit score.
+
+**POC implementation note:** The current build uses browser STT/TTS when available, and falls back to a text reply input when voice capture is unavailable or denied. The product goal remains audio-only; the text fallback keeps the flow operable without a full audio pipeline. It uses Torre.ai public APIs for candidate and job data, persists applications, and follows an event-driven flow from application → call → analysis. The implementation aligns with the bounded context structure described in [bounded-context-structure.md](bounded-context-structure.md) (applications, calls, analysis modules).
 
 ---
 

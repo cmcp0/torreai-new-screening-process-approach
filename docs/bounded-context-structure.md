@@ -45,7 +45,7 @@ Within the `screening` bounded context, we have three modules:
 **Domain**:
 - `ScreeningCall` entity
 - `CallStatus` value object
-- `UserLeftCall` domain event
+- `CallFinished` domain event (published when call ends; triggers analysis)
 - Call business rules
 
 **Application**:
@@ -54,9 +54,7 @@ Within the `screening` bounded context, we have three modules:
 - Commands for call initiation, management
 
 **Infrastructure**:
-- `OpenRouterLLMAdapter` - LLM provider implementation
-- `ElevenLabsTranscriptionAdapter` - STT/TTS implementation
-- `WebRTCAdapter` - Video/audio handling
+- **POC**: `OllamaLLM` adapter (e.g. `ollama_llm.py`) for Emma; text-based WebSocket (no STT/TTS). Optional/future: OpenRouter LLM, ElevenLabs transcription, WebRTC for audio/video.
 
 **Features**:
 - Feature 3.1: Call Page Transition
@@ -85,8 +83,7 @@ Within the `screening` bounded context, we have three modules:
 - Commands for triggering analysis
 
 **Infrastructure**:
-- `OpenRouterEmbeddingsAdapter` - Embeddings provider
-- Analysis repository implementations
+- **POC**: Embeddings via Ollama `/api/embed` in applications subscribers; analysis repository implementations. Optional/future: OpenRouter or other embeddings adapter.
 
 **Features**:
 - Feature 6.1: Call Analysis Processing
@@ -99,7 +96,7 @@ Within the `screening` bounded context, we have three modules:
 Modules communicate through:
 1. **Domain Events**: Published by one module, consumed by another
    - `JobOfferApplied` (applications) → triggers data prep
-   - `UserLeftCall` (calls) → triggers analysis
+   - `CallFinished` (calls) → triggers analysis (implementation uses `CallFinished` when the call ends; see PRD and screening design docs)
    - `AnalysisCompleted` (analysis) → enables results display
 
 2. **Shared Domain Concepts**: Some concepts may be shared (e.g., `ApplicationId`)
@@ -179,57 +176,49 @@ Code that is used across **multiple bounded contexts** should be placed in `src/
 
 ## Directory Structure
 
+The codebase uses a **flat per-layer layout** within each module: one file per layer (e.g. `entities.py`, `events.py`) rather than one file per entity. The structure below reflects the actual layout.
+
 ```
 src/screening/
 ├── applications/
 │   ├── domain/
-│   │   ├── entities/
-│   │   │   └── screening_application.py
-│   │   ├── events/
-│   │   │   └── job_offer_applied.py
+│   │   ├── entities.py
+│   │   ├── events.py
+│   │   ├── value_objects.py
 │   │   └── ports/
-│   │       └── event_publisher.py
 │   ├── application/
+│   │   ├── ports/
 │   │   └── services/
-│   │       └── application_service.py
 │   └── infrastructure/
-│       └── adapters/
-│           └── rabbitmq_event_publisher.py
+│       ├── adapters/
+│       └── subscribers/
 ├── calls/
 │   ├── domain/
-│   │   ├── entities/
-│   │   │   └── screening_call.py
-│   │   ├── value_objects/
-│   │   │   └── call_status.py
-│   │   ├── events/
-│   │   │   └── user_left_call.py
+│   │   ├── entities.py
+│   │   ├── events.py
+│   │   ├── value_objects.py
 │   │   └── ports/
-│   │       ├── llm_provider.py
-│   │       └── transcription_provider.py
 │   ├── application/
 │   │   └── services/
-│   │       ├── call_service.py
-│   │       └── emma_service.py
+│   └── infrastructure/
+│       ├── adapters/
+│       ├── subscribers/
+│       └── websocket_handler.py
+├── analysis/
+│   ├── domain/
+│   │   ├── entities.py
+│   │   ├── events.py
+│   │   ├── value_objects.py
+│   │   └── ports/
+│   ├── application/
+│   │   ├── ports/
+│   │   └── services/
 │   └── infrastructure/
 │       └── adapters/
-│           ├── openrouter_llm_adapter.py
-│           └── elevenlabs_transcription_adapter.py
-└── analysis/
-    ├── domain/
-    │   ├── entities/
-    │   │   └── screening_analysis.py
-    │   ├── value_objects/
-    │   │   └── fit_assessment.py
-    │   ├── events/
-    │   │   └── analysis_completed.py
-    │   └── ports/
-    │       └── embeddings_provider.py
-    ├── application/
-    │   └── services/
-    │       └── analysis_service.py
-    └── infrastructure/
-        └── adapters/
-            └── openrouter_embeddings_adapter.py
+├── persistence/
+│   └── models.py
+└── shared/
+    └── domain/
 ```
 
 ## Data Preparation
