@@ -3,11 +3,11 @@ import { mount } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import ApplicationPage from './ApplicationPage.vue'
 
-vi.mock('../api/mock', () => ({
+vi.mock('../api/client', () => ({
   createApplication: vi.fn(),
 }))
 
-const { createApplication } = await import('../api/mock')
+const { createApplication } = await import('../api/client')
 
 describe('ApplicationPage', () => {
   beforeEach(() => {

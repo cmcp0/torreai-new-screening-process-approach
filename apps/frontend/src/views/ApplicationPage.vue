@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { createApplication } from '../api/mock'
+import { createApplication, ApiError } from '../api/client'
 import BaseCard from '../components/ui/BaseCard.vue'
 import Spinner from '../components/ui/Spinner.vue'
 
@@ -10,6 +10,12 @@ const router = useRouter()
 const loading = ref(true)
 const error = ref<string | null>(null)
 let cancelled = false
+
+function setError(e: unknown): string {
+  if (e instanceof ApiError) return e.message
+  if (e instanceof Error) return e.message
+  return 'Failed to create application.'
+}
 
 onMounted(async () => {
   const username = route.query.username
@@ -32,7 +38,7 @@ onMounted(async () => {
   } catch (e) {
     if (!cancelled) {
       loading.value = false
-      error.value = e instanceof Error ? e.message : 'Failed to create application.'
+      error.value = setError(e)
     }
   }
 })
@@ -53,9 +59,9 @@ onBeforeUnmount(() => {
         <h1 class="text-h2 text-text-primary">Unable to start</h1>
         <p class="text-body text-text-primary" role="alert">{{ error }}</p>
         <a
-          href="/application"
+          :href="`/application?username=${encodeURIComponent(String(route.query.username || ''))}&job_offer_id=${encodeURIComponent(String(route.query.job_offer_id || ''))}`"
           class="inline-block rounded px-4 py-2 font-button text-button text-brand underline focus:outline-none focus:ring-2 focus:ring-brand"
-          aria-label="Back to application"
+          aria-label="Try again"
         >
           Try again
         </a>
