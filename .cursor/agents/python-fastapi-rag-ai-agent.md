@@ -104,7 +104,7 @@ This project uses a **bounded context** layout under `/src/`. When adding or cha
 | Module | Responsibility | Domain (examples) | Application (examples) | Infrastructure (examples) |
 |--------|----------------|-------------------|------------------------|----------------------------|
 | **applications/** | Application submission and event handling | `ScreeningApplication`, `JobOfferApplied` | `ApplicationService` | Event publisher adapters, application repo |
-| **calls/** | Call lifecycle, execution, real-time | `ScreeningCall`, `CallStatus`, `UserLeftCall` | `CallService`, `EmmaService` | `OpenRouterLLMAdapter`, `ElevenLabsTranscriptionAdapter`, `WebRTCAdapter` |
+| **calls/** | Call lifecycle, execution, real-time | `ScreeningCall`, `CallStatus`, `CallFinished` | `CallService`, `EmmaService` | `OpenRouterLLMAdapter`, `ElevenLabsTranscriptionAdapter`, `WebRTCAdapter` |
 | **analysis/** | Post-call analysis, embeddings, scoring | `ScreeningAnalysis`, `FitAssessment`, `AnalysisCompleted` | `AnalysisService` | `OpenRouterEmbeddingsAdapter`, analysis repo |
 
 ### Per-module layout (DDD layers)
@@ -119,7 +119,7 @@ Place new entities, events, value objects, ports, services, and adapters in the 
 
 ### Module communication
 
-- **Domain events** (e.g. `JobOfferApplied`, `UserLeftCall`, `AnalysisCompleted`): one module publishes; others consume. Prefer events over direct module-to-module calls for cross-module flow.
+- **Domain events** (e.g. `JobOfferApplied`, `CallFinished`, `AnalysisCompleted`): one module publishes; others consume. Prefer events over direct module-to-module calls for cross-module flow.
 - **Shared domain concepts**: Cross-context → `src/shared/domain/`. Within screening only → `src/screening/shared/domain/` (optional).
 - **Application services** may coordinate across modules when needed.
 
