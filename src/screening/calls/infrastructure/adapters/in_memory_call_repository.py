@@ -6,7 +6,7 @@ from src.screening.calls.domain.entities import (
 )
 from src.screening.calls.domain.value_objects import CallStatus
 from src.screening.calls.application.ports import CallRepository
-from src.screening.shared.domain import CallId
+from src.screening.shared.domain import ApplicationId, CallId
 
 
 class InMemoryCallRepository(CallRepository):
@@ -18,6 +18,12 @@ class InMemoryCallRepository(CallRepository):
 
     def get_call(self, call_id: CallId) -> Optional[ScreeningCall]:
         return self._calls.get(str(call_id))
+
+    def get_call_by_application_id(self, application_id: ApplicationId) -> Optional[ScreeningCall]:
+        for call in self._calls.values():
+            if call.application_id == application_id:
+                return call
+        return None
 
     def update_call_transcript(
         self, call_id: CallId, transcript: list[TranscriptSegment]

@@ -1,7 +1,9 @@
 from datetime import datetime
-from typing import Optional
+from typing import Callable, Optional, Protocol
 from uuid import uuid4
 
+from src.screening.applications.domain.ports import EventPublisher
+from src.screening.calls.application.ports import CallRepository
 from src.screening.calls.domain.entities import (
     ScreeningCall,
     TranscriptSegment,
@@ -21,12 +23,17 @@ class CallPrompt:
         self.role_context = role_context
 
 
+class CallPromptProviderResult(Protocol):
+    prepared_questions: list[str]
+    role_context: str
+
+
 class CallService:
     def __init__(
         self,
-        get_call_prompt: callable,
-        get_event_publisher: callable,
-        get_call_repository: callable,
+        get_call_prompt: Callable[[str], Optional[CallPromptProviderResult]],
+        get_event_publisher: Callable[[], EventPublisher],
+        get_call_repository: Callable[[], Optional[CallRepository]],
     ) -> None:
         self._get_call_prompt = get_call_prompt
         self._get_event_publisher = get_event_publisher

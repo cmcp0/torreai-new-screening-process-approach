@@ -1,7 +1,5 @@
 from dataclasses import dataclass
-from typing import AsyncIterator, Optional
-
-from src.screening.calls.domain.entities import TranscriptSegment
+from typing import Optional, Protocol
 
 
 @dataclass
@@ -10,17 +8,25 @@ class EmmaTurn:
     control: Optional[str] = None
 
 
+class LLMGenerate(Protocol):
+    async def __call__(self, *, system: str, user: str) -> str:
+        ...
+
+
 class EmmaService:
-    def __init__(self, llm_generate: callable = None) -> None:
+    def __init__(
+        self,
+        llm_generate: Optional[LLMGenerate] = None,
+    ) -> None:
         self._llm_generate = llm_generate or _stub_llm
 
     async def greeting(self, role_context: str) -> str:
-        return "Hello! Thanks for joining. I'm Emma. I'll ask you a few questions about your experience. Ready when you are."
+        return "Hello! I'm Emma. I'll ask you a few questions about your experience. Ready when you are."
 
     async def next_question(
         self,
         question_index: int,
-        prepared_questions: list,
+        prepared_questions: list[str],
         role_context: str,
     ) -> Optional[str]:
         if question_index >= len(prepared_questions):
