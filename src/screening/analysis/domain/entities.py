@@ -11,3 +11,4 @@ class ScreeningAnalysis:
     fit_score: int
     skills: list[str]
     completed_at: datetime
+    status: str = "completed"  # "completed" | "failed"
