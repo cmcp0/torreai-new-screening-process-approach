@@ -3,7 +3,7 @@
 
 .DEFAULT_GOAL := help
 
-.PHONY: help up up-d down build logs logs-backend logs-frontend ps restart clean up-ollama down-ollama ollama-pull-embed ollama-list-models up-ec2 down-ec2 logs-ec2 ps-ec2 up-ec2-https down-ec2-https test test-backend test-backend-unit test-backend-integration test-frontend
+.PHONY: help up up-d down build logs logs-backend logs-frontend ps restart clean up-ollama down-ollama ollama-pull-embed ollama-list-models up-ec2 down-ec2 logs-ec2 ps-ec2 up-ec2-https down-ec2-https ec2-ollama-pull-embed ec2-ollama-pull-chat ec2-ollama-list-models test test-backend test-backend-unit test-backend-integration test-frontend
 
 DOCKER_COMPOSE = docker compose
 PYTHON ?= python
@@ -35,6 +35,9 @@ help:
 	@echo "  make ps-ec2      List EC2-style stack services"
 	@echo "  make up-ec2-https Start EC2-style stack with HTTPS nginx override"
 	@echo "  make down-ec2-https Stop EC2-style HTTPS stack"
+	@echo "  make ec2-ollama-pull-embed Pull EC2 embedding model in Ollama"
+	@echo "  make ec2-ollama-pull-chat  Pull EC2 chat model in Ollama"
+	@echo "  make ec2-ollama-list-models List Ollama models in EC2 stack"
 	@echo ""
 	@echo "Tests"
 	@echo "  make test             Run backend + frontend tests"
@@ -104,6 +107,15 @@ up-ec2-https:
 
 down-ec2-https:
 	$(DOCKER_COMPOSE) --env-file .env.ec2 -f docker-compose.ec2.yml -f docker-compose.ec2.https.yml down
+
+ec2-ollama-pull-embed:
+	$(DOCKER_COMPOSE) --env-file .env.ec2 -f docker-compose.ec2.yml exec -T ollama ollama pull nomic-embed-text
+
+ec2-ollama-pull-chat:
+	$(DOCKER_COMPOSE) --env-file .env.ec2 -f docker-compose.ec2.yml exec -T ollama ollama pull llama3.2
+
+ec2-ollama-list-models:
+	$(DOCKER_COMPOSE) --env-file .env.ec2 -f docker-compose.ec2.yml exec -T ollama ollama list
 
 test: test-backend test-frontend
 

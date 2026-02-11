@@ -16,6 +16,14 @@ services:
     networks:
       - screening
 
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - screening
+
   backend:
     build:
       context: .
@@ -24,6 +32,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      ollama:
+        condition: service_started
     environment:
       SCREENING_CORS_ORIGINS: ${SCREENING_CORS_ORIGINS:-http://localhost}
       SCREENING_TORRE_BASE_URL: ${SCREENING_TORRE_BASE_URL:-https://torre.ai}
@@ -31,7 +41,9 @@ services:
       SCREENING_TORRE_RETRIES: ${SCREENING_TORRE_RETRIES:-1}
       SCREENING_DATABASE_URL: postgresql://${POSTGRES_USER:-screening}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-screening}
       SCREENING_BROKER_URL: ""
-      SCREENING_OLLAMA_BASE_URL: ""
+      SCREENING_OLLAMA_BASE_URL: ${SCREENING_OLLAMA_BASE_URL:-http://ollama:11434}
+      SCREENING_OLLAMA_EMBED_MODEL: ${SCREENING_OLLAMA_EMBED_MODEL:-nomic-embed-text}
+      SCREENING_OLLAMA_CHAT_MODEL: ${SCREENING_OLLAMA_CHAT_MODEL:-llama3.2}
     expose:
       - "8000"
     healthcheck:
@@ -60,6 +72,7 @@ services:
 
 volumes:
   postgres_data:
+  ollama_data:
 
 networks:
   screening:
