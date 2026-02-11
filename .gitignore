@@ -87,6 +87,14 @@ ipython_config.py
 # pyenv
 .python-version
 
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+*.tfvars
+!*.tfvars.example
+
 # pipenv
 #   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
 #   However, in case of collaboration, if having platform-specific dependencies or dependencies
@@ -106,6 +114,7 @@ celerybeat.pid
 
 # Environments
 .env
+.env.ec2
 .venv
 env/
 venv/

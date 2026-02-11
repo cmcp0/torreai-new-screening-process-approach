@@ -1,0 +1,8 @@
+aws_region       = "us-east-1"
+project_name     = "torre-screening-poc"
+instance_type    = "t4g.small"
+root_volume_size_gb = 8
+# Optional explicit subnet if you want to pin an AZ:
+# subnet_id_override = "subnet-0123456789abcdef0"
+key_name         = "your-ec2-keypair-name"
+ssh_cidr_blocks  = ["203.0.113.10/32"]
