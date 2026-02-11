@@ -158,6 +158,13 @@ Then run:
 docker compose --env-file .env.ec2 -f docker-compose.ec2.yml up -d --build
 ```
 
+Pull required Ollama models (one-time per EC2 volume):
+
+```bash
+make ec2-ollama-pull-embed
+make ec2-ollama-pull-chat
+```
+
 Check status:
 
 ```bash
@@ -205,6 +212,7 @@ Notes:
 - The workflow expects `.env.ec2` to exist on EC2.
 - On first deploy, if `.env.ec2` is missing, the job creates it from `.env.ec2.example` and exits so you can set real values.
 - Recommended order: run Terraform first, then set secrets, then run deploy workflow manually.
+- After first deploy, pull Ollama models once on EC2 (`make ec2-ollama-pull-embed` and `make ec2-ollama-pull-chat`).
 
 ## Terraform (Run First)
 

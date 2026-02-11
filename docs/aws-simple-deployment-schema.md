@@ -16,12 +16,13 @@ flowchart LR
     NGINX --> FE["Vue static app"]
     NGINX --> BE["FastAPI backend (container)"]
     BE --> PG["PostgreSQL (container)"]
+    BE --> OLLAMA["Ollama (container)"]
     BE --> TORRE["Torre API"]
 ```
 
 ## Runtime Decisions
 - `SCREENING_BROKER_URL=""` (in-memory event publisher).
-- `SCREENING_OLLAMA_BASE_URL=""` (stub/fallback behavior).
+- `SCREENING_OLLAMA_BASE_URL=http://ollama:11434` (Ollama enabled in EC2 stack).
 - Postgres is required and runs as a Docker container.
 - Keep one backend container for this PoC call flow.
 
