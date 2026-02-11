@@ -5,13 +5,18 @@ const APPLICATION_CREATE_TIMEOUT_MS = 30_000
 const ANALYSIS_FETCH_TIMEOUT_MS = 10_000
 
 export class ApiError extends Error {
+  status: number
+  body?: unknown
+
   constructor(
     message: string,
-    public status: number,
-    public body?: unknown
+    status: number,
+    body?: unknown
   ) {
     super(message)
     this.name = 'ApiError'
+    this.status = status
+    this.body = body
   }
 }
 

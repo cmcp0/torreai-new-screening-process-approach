@@ -43,15 +43,6 @@ function clearPollTimer() {
   }
 }
 
-async function fetchOnce() {
-  const id = applicationId.value
-  if (typeof id !== 'string' || !id) return
-  const data = await getAnalysis(id)
-  result.value = data
-  loading.value = false
-  clearPollTimer()
-}
-
 function schedulePoll(startTime: number, attempt: number) {
   if (attempt >= POLL_MAX_ATTEMPTS || Date.now() - startTime >= POLL_MAX_DURATION_MS) {
     loading.value = false
