@@ -63,12 +63,7 @@ jobs:
 
       - name: Package release
         run: |
-          tar \
-            --exclude='.git' \
-            --exclude='.venv' \
-            --exclude='node_modules' \
-            --exclude='apps/frontend/node_modules' \
-            -czf release.tgz .
+          git archive --format=tar.gz --output=release.tgz HEAD
 
       - name: Upload release to EC2
         uses: appleboy/scp-action@v0.1.7
